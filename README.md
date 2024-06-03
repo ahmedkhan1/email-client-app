@@ -1,4 +1,4 @@
-# Email Sync Project
+# Email Client Sync Project
 
 This project is designed to sync emails from various providers (currently Outlook) to an Elasticsearch database, providing real-time updates.
 
@@ -11,22 +11,7 @@ Ensure you have the following installed:
 - [Node.js](https://nodejs.org/) (for local development without Docker)
 
 ## Project Structure
-── backend
-│ ├── Dockerfile
-│ ├── .env
-│ └── src
-│ ├── index.js
-│ ├── utils.js
-│ └── ...
-├── frontend
-│ ├── Dockerfile
-│ ├── .env
-│ └── src
-│ ├── App.js
-│ ├── index.js
-│ └── ...
-├── docker-compose.yml
-└── README.md
+![image](https://github.com/ahmedkhan1/email-client-app/assets/26416009/aa653e98-90e8-46f1-92fd-11be8307da99)
 
 
 ## Setup Instructions
@@ -45,19 +30,20 @@ Ensure you have the required environment variables set up in the .env files for 
 ### 3. Build and Run with Docker
 Ensure Docker is running on your machine, then use Docker Compose to build and run the services.
 
+```sh
 docker-compose up --build
-
+```
 
 ### This command will:
 
 Build the Docker images for the frontend and backend.
 Start the containers.
-The backend will be available on http://localhost:3001.
-The frontend will be available on http://localhost:3000.
+The backend will be available on http://localhost:3000.
+The frontend will be available on http://localhost:5000.
 
 
 ### 4. Access the Application
-Open your browser and go to http://localhost:3000 to access the frontend application.
+Open your browser and go to http://localhost:5000 to access the frontend application.
 
 
 
@@ -67,31 +53,34 @@ To run the backend server locally without Docker:
 
 Navigate to the backend directory
 
+```sh
 cd backend
+```
 
 Install the dependencies:
-
+```sh
 npm install
-
+```
 
 Start the server:
-
+```sh
 npm start
-
+```
 
 ### Frontend Development
 To run the frontend application locally without Docker:
 
 Navigate to the frontend directory:
-
+```sh
 cd frontend
-
+```
 
 Install the dependencies:
-
+```sh
 npm install
-
+```
 
 Start the development server:
-
+```sh
 npm start
+```
