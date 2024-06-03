@@ -24,8 +24,30 @@ cd email-sync-project
 ```
 
 ### 2. Environment Variables
-Ensure you have the required environment variables set up in the .env files for both the frontend and backend.
+Ensure you have the required environment variables set up in the .env files for both the frontend and backend. There is env-example file for each project avaialbe to give you an idea:
 
+For backend:
+```sh
+PORT=3000
+ELASTICSEARCH_URL=
+ELASTICSEARCH_USERNAME=
+ELASTICSEARCH_PASSWORD=
+
+# OUTLOOK ENV
+# tenantId = 
+OUTLOOK_CLIENT_ID=
+OUTLOOK_CLIENT_SECRET=
+OUTLOOK_REDIRECT_URI=
+
+# AUth Env
+JWT_SECRET=
+```
+
+For frontend:
+```sh
+PORT=
+REACT_APP_BASE_URL=
+```
 
 ### 3. Build and Run with Docker
 Ensure Docker is running on your machine, then use Docker Compose to build and run the services.
