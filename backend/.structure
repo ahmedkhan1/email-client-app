@@ -1,0 +1,18 @@
+backend/
+├── controllers/
+│   ├── auth.controller.js
+│   ├── email.controller.js
+├── models/
+│   ├── user.model.js
+├── routes/
+│   ├── api.routes.js
+│   ├── auth.routes.js
+│   ├── email.routes.js
+├── services/
+│   ├── email.service.js
+│   ├── auth.service.js
+│   ├── crone.service.js
+│   ├── elasticSearch.service.js
+├── config.js
+├── app.js
+├── package.json
