@@ -18,7 +18,6 @@
 
 .email-table {
   border-collapse: collapse;
-  width: 80%;
   max-width: 800px;
 }
 
@@ -34,6 +33,34 @@
 
 
 .form-section{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0;
+  bottom: 0;
+}
+
+.loader span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #fffffff5;
+  width: 210px;
+  height: 50px;
+}
+
+.email-grid {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;

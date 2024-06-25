@@ -2,6 +2,7 @@ const BaseEmailProvider = require('./baseProvider.service');
 const config = require('../../config');
 const { createUser } = require('../../models/user.model');
 const axios = require('axios');
+const { updateTokens } = require('../email.service');
 
 class OutlookProvider extends BaseEmailProvider {
   callbackUrl = "https://login.microsoftonline.com/common/oauth2/v2.0";
@@ -32,10 +33,10 @@ class OutlookProvider extends BaseEmailProvider {
       grant_type: 'authorization_code'
     }));
 
-    const token = response.data.access_token;
-    const userInfo = await this.getUserInfo(token);
-    const userId = await createUser(userInfo.mail, token);
-
+    const { access_token, refresh_token, expires_in } = response.data;
+    const userInfo = await this.getUserInfo(access_token);
+    const userId = await createUser(userInfo.mail, access_token, refresh_token, expires_in);
+  
     if(userId) {
       res.redirect(`/email/sync_emails/${userId}/${userInfo.mail}`);
     } else {

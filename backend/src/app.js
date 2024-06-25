@@ -1,15 +1,15 @@
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const config = require('./config');
 const authRoutes = require('./routes/auth.routes');
 const emailRoutes = require('./routes/email.routes');
 const apiRoutes = require('./routes/api.routes');
 
-const { client, checkConnection } = require('./services/elasticSearch.service');
-
-require('./services/crone.service')(client, checkConnection);
-
 const app = express();
+const server = http.createServer(app);
+require('./services/socket.service')(server);
+
 
 // Enable CORS for all routes
 app.use(cors());
@@ -23,7 +23,8 @@ app.use('/email', emailRoutes);
 app.use('/api', apiRoutes);
 
 
-app.listen(config.PORT, () => {
+server.listen(config.PORT, () => {
     console.log(`Server running on port ${config.PORT}`);
 });
+
 
