@@ -1,5 +1,3 @@
-const { getOutlookAuthUrl, getAccessToken, getUserInfo } = require('../services/auth.service');
-const { createUser } = require('../models/user.model');
 const OutlookProvider = require('../services/emailProviders/outLookProvider.service');
 
 const getProvider = (providerName) => {
