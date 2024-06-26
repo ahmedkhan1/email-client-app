@@ -7,22 +7,8 @@ const esClient = client;
 // Sync emails function
 const syncEmails = async (userId, wss) => {
   try {
-    // Retrieve user data from Elasticsearch
-    const userResponse = await esClient.get({ index: 'users', id: userId });
-    const user = userResponse._source;
-    let { accessToken, refreshToken, tokenExpiry } = user;
-
-    // Check if the access token is expired
-    if (isTokenExpired(tokenExpiry)) {
-      console.log('Access token expired, refreshing...');
-      const newTokens = await refreshAccessToken(refreshToken);
-      accessToken = newTokens.access_token;
-      refreshToken = newTokens.refresh_token;
-      const expiresIn = newTokens.expires_in;
-
-      // Update tokens in the database
-      await updateTokens(userId, accessToken, refreshToken, expiresIn);
-    }
+    // Retrieve user accessToken from Elasticsearch
+    const { accessToken } = await getAccessToken(userId);
 
     const headers = { Authorization: `Bearer ${accessToken}` };
 
@@ -40,6 +26,7 @@ const syncEmails = async (userId, wss) => {
       await storeMailbox(userId, mailbox);
       await syncEmailsInMailbox(userId, mailbox.id, accessToken);
     }
+
     if(wss){
       // Notify frontend about the sync completion
       broadcast(wss, { type: 'syncComplete', userId });
@@ -60,6 +47,31 @@ const broadcast = (wss, data) => {
   });
 };
 
+const getAccessToken = async (userId) => {
+  try {
+    // Retrieve user data from Elasticsearch
+    const userResponse = await esClient.get({ index: 'users', id: userId });
+    const user = userResponse._source;
+    let { accessToken, refreshToken, tokenExpiry } = user;
+
+    // Check if the access token is expired
+    if (isTokenExpired(tokenExpiry)) {
+      console.log('Access token expired, refreshing...');
+      const newTokens = await refreshAccessToken(refreshToken);
+      accessToken = newTokens.access_token;
+      refreshToken = newTokens.refresh_token;
+      const expiresIn = newTokens.expires_in;
+
+      // Update tokens in the database
+      await updateTokens(userId, accessToken, refreshToken, expiresIn);
+    }
+
+    return {accessToken};
+  } catch (error) {
+    console.error('Error getting access token:', error);
+    throw error;
+  }
+};
 
 const syncEmailsInMailbox = async (userId, mailboxId, accessToken) => {
   const headers = { Authorization: `Bearer ${accessToken}` };
@@ -70,18 +82,18 @@ const syncEmailsInMailbox = async (userId, mailboxId, accessToken) => {
     await storeEmail(userId, email);
   }
 
-  // try{
-  //   // Fetch deleted items to handle deletions
-  //   const deletedItemsResponse = await axios.get(`https://graph.microsoft.com/v1.0/me/mailFolders/deletedItems/messages?$filter=receivedDateTime ge ${emails[emails.length - 1].receivedDateTime}`, { headers });
-  //   const deletedItems = deletedItemsResponse.data.value;
+  try{
+    // Fetch deleted items to handle deletions
+    const deletedItemsResponse = await axios.get(`https://graph.microsoft.com/v1.0/me/mailFolders/deletedItems/messages?$filter=receivedDateTime ge ${emails[emails.length - 1].receivedDateTime}`, { headers });
+    const deletedItems = deletedItemsResponse.data.value;
 
-  //   // Delete emails that are in deletedItems mailbox from the current mailbox index
-  //   for (const deletedEmail of deletedItems) {
-  //     await deleteEmail(userId, deletedEmail.id);
-  //   }
-  // }catch(err){
-  //   console.log("error deleting:");
-  // }
+    // Delete emails that are in deletedItems mailbox from the current mailbox index
+    for (const deletedEmail of deletedItems) {
+      await deleteEmail(userId, deletedEmail.id);
+    }
+  }catch(err){
+    console.log("error deleting:");
+  }
 };
 
 const storeEmail = async (userId, emailData) => {
@@ -149,7 +161,8 @@ const deleteEmail = async (userId, emailId) => {
 
 module.exports = { 
   syncEmails, 
-  isTokenExpired, 
+  isTokenExpired,
+  getAccessToken,
   refreshAccessToken, 
   updateTokens, 
   storeMailbox, 

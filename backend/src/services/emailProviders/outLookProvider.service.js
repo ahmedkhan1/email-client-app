@@ -6,7 +6,7 @@ const { updateTokens } = require('../email.service');
 
 class OutlookProvider extends BaseEmailProvider {
   callbackUrl = "https://login.microsoftonline.com/common/oauth2/v2.0";
-  graphUrl = "https://graph.microsoft.com";
+  graphUrl = "https://graph.microsoft.com/v1.0";
 
   constructor() {
     super();
@@ -36,7 +36,10 @@ class OutlookProvider extends BaseEmailProvider {
     const { access_token, refresh_token, expires_in } = response.data;
     const userInfo = await this.getUserInfo(access_token);
     const userId = await createUser(userInfo.mail, access_token, refresh_token, expires_in);
-  
+
+    // Create Subscription for Email events
+    this.createSubscription(access_token, userId);
+
     if(userId) {
       res.redirect(`/email/sync_emails/${userId}/${userInfo.mail}`);
     } else {
@@ -46,17 +49,46 @@ class OutlookProvider extends BaseEmailProvider {
       });
     }
   }
-  
+
   async getUserInfo(accessToken) {
-    const response = await axios.get(`${this.graphUrl}/v1.0/me`, {
+    const response = await axios.get(`${this.graphUrl}/me`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     return response.data;
   }
 
-  async fetchEmails(accessToken) {
-
+  async createSubscription(accessToken, userId) {
+    try {
+      const response = await axios.post(`${this.graphUrl}/subscriptions`, {
+        changeType: 'created,updated,deleted',
+        notificationUrl: process.env.API_URL + '/api/email/webhook', // Your endpoint to receive notifications
+        resource: '/me/messages', // Subscribe to message changes
+        expirationDateTime: new Date(new Date().getTime() + 3600 * 1000).toISOString(), // 1-hour expiration
+        clientState: userId, // Optional, for additional security
+      }, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+  
+      console.log('Subscription created:', response.data);
+    } catch (error) {
+      console.error('Error creating subscription:', error.response.data);
+    }
   }
+
+  async renewSubscription(subscriptionId, accessToken) {
+    try {
+      const response = await axios.patch(`${this.graphUrl}/subscriptions/${subscriptionId}`, {
+        expirationDateTime: new Date(new Date().getTime() + 3600 * 1000).toISOString()
+      }, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+  
+      console.log('Subscription renewed:', response.data);
+    } catch (error) {
+      console.error('Error renewing subscription:', error.response.data);
+    }
+  };
+  
 }
 
 module.exports = OutlookProvider;

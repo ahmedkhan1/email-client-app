@@ -5,17 +5,23 @@ const config = require('./config');
 const authRoutes = require('./routes/auth.routes');
 const emailRoutes = require('./routes/email.routes');
 const apiRoutes = require('./routes/api.routes');
+const WebSocket = require('ws');
 
 const app = express();
 const server = http.createServer(app);
-require('./services/socket.service')(server);
-
+const wss = new WebSocket.Server({ server });
 
 // Enable CORS for all routes
 app.use(cors());
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+// Middleware to attach WebSocketServer instance to request
+app.use((req, res, next) => {
+    req.wss = wss;
+    next();
+});
 
 // Use your routes
 app.use('/auth', authRoutes);
@@ -28,3 +34,17 @@ server.listen(config.PORT, () => {
 });
 
 
+// Open websockets connection with client
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+
+  ws.on('message', (message) => {
+    console.log('Received:', message);
+  });
+
+  ws.on('close', () => {
+    console.log('Client disconnected');
+  });
+});
+
+module.exports = wss;
